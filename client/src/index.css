@@ -1,0 +1,12 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0a08; --surface: #111110; --surface2: #161614;
+  --border: #222220; --muted: #444440; --text: #e8e6df; --dim: #888880;
+  --accent: #c8f060; --accent2: #f0a040; --red: #f05050; --blue: #60a8f0; --teal: #40d0a8;
+  --font-head: 'Syne', sans-serif; --font-mono: 'DM Mono', monospace;
+}
+body { background: var(--bg); color: var(--text); font-family: var(--font-mono); font-size: 13px; }
+input, textarea, select, button { font-family: var(--font-mono); }
+::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
+a { color: var(--blue); text-decoration: none; } a:hover { text-decoration: underline; }
