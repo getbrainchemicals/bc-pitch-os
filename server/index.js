@@ -180,7 +180,7 @@ async function callClaude(system, user, maxTokens = 2000) {
   if (!key) throw new Error('ANTHROPIC_API_KEY not set');
   const r = await axios.post(
     'https://api.anthropic.com/v1/messages',
-    { model: 'claude-sonnet-4-20250514', max_tokens: maxTokens, system, messages: [{ role: 'user', content: user }] },
+    { model: 'claude-sonnet-4-5', max_tokens: maxTokens, system, messages: [{ role: 'user', content: user }] },
     { headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' } }
   );
   return r.data.content.map(b => b.text || '').join('');
