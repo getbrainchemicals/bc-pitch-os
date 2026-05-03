@@ -81,7 +81,7 @@ export default function App() {
     await saveClient(updated);
   };
 
-  const login = () => { window.location.href = `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/auth/google`;; };
+  const login = () => { const base = window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin; window.location.href = base + '/auth/google'; };
   const logout = async () => { await api.post('/auth/logout'); setUser(null); setClients([]); };
 
   if (!authChecked) return (
