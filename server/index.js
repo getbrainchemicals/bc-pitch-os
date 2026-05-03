@@ -286,8 +286,10 @@ Be sharp. No repetition. Write like a senior creative strategist presenting to t
     );
 
     res.json({ text: synthesis, geminiRaw, claudeRaw });
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
+} catch (err) { 
+    console.error('RESEARCH ERROR:', err.message, err.response?.data);
+    res.status(500).json({ error: err.message, detail: err.response?.data }); 
+  }});
 
 // ─── Plan ────────────────────────────────────────────────────────────────
 app.post('/ai/plan', async (req, res) => {
