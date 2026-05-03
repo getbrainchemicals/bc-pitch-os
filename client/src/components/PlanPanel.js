@@ -1,20 +1,25 @@
 import React, { useState } from 'react';
 import api from '../utils/api';
-import { ClientSelector, AIOutput } from './Shared';
+import { ClientSelector, AIOutput, ChatInput } from './Shared';
 
 const DEL_TYPES = ['Ad Film', 'Reel', 'Social', 'Brand Film', 'Podcast', 'OOH', 'Other'];
 
 export default function PlanPanel({ clients, activeClientId, setActiveClientId, updateActiveClient }) {
   const [loading, setLoading] = useState(false);
+  const [instruction, setInstruction] = useState('');
   const [delName, setDelName] = useState('');
   const [delType, setDelType] = useState('Ad Film');
+
   const activeClient = clients.find(c => c.id === activeClientId);
 
-  const runPlan = async () => {
+  const runPlan = async (customInstruction) => {
     if (!activeClient) return;
     setLoading(true);
     try {
-      const { data } = await api.post('/ai/plan', { client: activeClient });
+      const { data } = await api.post('/ai/plan', {
+        client: activeClient,
+        userInstructions: customInstruction || instruction || '',
+      });
       await updateActiveClient({ plan: data.text });
     } catch (e) { alert('Plan generation failed: ' + e.message); }
     setLoading(false);
@@ -38,32 +43,49 @@ export default function PlanPanel({ clients, activeClientId, setActiveClientId, 
     await updateActiveClient({ deliverables });
   };
 
-  const typeClass = (t) => {
-    const map = { 'Ad Film': 'del-film', 'Reel': 'del-reel', 'Social': 'del-social', 'Brand Film': 'del-brand' };
-    return map[t] || 'del-film';
-  };
+  const typeClass = t => ({ 'Ad Film': 'del-film', 'Reel': 'del-reel', 'Social': 'del-social', 'Brand Film': 'del-brand' }[t] || 'del-film');
 
   return (
     <div className="panel">
       <div className="section-label" style={{ marginBottom: 16 }}>Marketing Plan</div>
       <ClientSelector clients={clients} activeClientId={activeClientId} setActiveClientId={setActiveClientId} />
 
-      {!activeClient && (
+      {!activeClient ? (
         <div className="empty-state"><div className="icon">◎</div><div>Select a client to build a plan</div></div>
-      )}
-
-      {activeClient && (
+      ) : (
         <>
+          {!activeClient.research && (
+            <div style={{ marginBottom: 12, padding: '8px 12px', background: 'rgba(240,160,64,0.08)', border: '1px solid rgba(240,160,64,0.2)', borderRadius: 5, fontSize: 11, color: 'var(--accent2)' }}>
+              ⚠ Run Research first for a sharper plan
+            </div>
+          )}
+
+          {/* Chat */}
+          <ChatInput
+            client={activeClient}
+            tab="plan"
+            onInstruction={setInstruction}
+            placeholder="e.g. 'Focus on Instagram Reels and short-form content' or 'Budget is small, prioritise 2 hero pieces'"
+          />
+
+          {instruction && (
+            <div style={{ marginBottom: 12, padding: '8px 12px', background: 'rgba(200,240,96,0.06)', border: '1px solid rgba(200,240,96,0.2)', borderRadius: 5, fontSize: 11, color: 'var(--accent)' }}>
+              ✦ Instruction: "{instruction}"
+              <span style={{ marginLeft: 8, cursor: 'pointer', color: 'var(--muted)' }} onClick={() => setInstruction('')}>× clear</span>
+            </div>
+          )}
+
           <div className="btn-row" style={{ marginBottom: 14 }}>
-            <button className="btn btn-primary" onClick={runPlan} disabled={loading}>
-              {loading ? 'Building...' : 'Generate Marketing Plan ↗'}
+            <button className="btn btn-primary" onClick={() => runPlan(instruction)} disabled={loading}>
+              {loading ? 'Building Plan...' : '✦ Generate Plan'}
             </button>
-            {!activeClient.research && (
-              <span style={{ fontSize: 11, color: 'var(--accent2)' }}>⚠ Run Research first for better results</span>
-            )}
           </div>
 
-          <AIOutput text={activeClient.plan} loading={loading} placeholder="Generate a marketing plan. Run Research first for a sharper output." />
+          <AIOutput
+            text={activeClient.plan}
+            loading={loading}
+            placeholder="Generate a marketing plan. Add Research first for a sharper output. Use the chat to give specific instructions before generating."
+          />
 
           <div className="separator" />
 
