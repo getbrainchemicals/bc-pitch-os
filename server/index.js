@@ -50,7 +50,12 @@ const oauth2Client = new google.auth.OAuth2(
 
 const TOKEN_PATH = path.join(__dirname, '.tokens.json');
 let tokens = null;
-if (fs.existsSync(TOKEN_PATH)) {
+if (process.env.GOOGLE_TOKENS) {
+  try {
+    tokens = JSON.parse(process.env.GOOGLE_TOKENS);
+    oauth2Client.setCredentials(tokens);
+  } catch(e) { console.log('No stored tokens'); }
+} else if (fs.existsSync(TOKEN_PATH)) {
   tokens = JSON.parse(fs.readFileSync(TOKEN_PATH));
   oauth2Client.setCredentials(tokens);
 }
@@ -76,6 +81,7 @@ app.get('/auth/google/callback', async (req, res) => {
     oauth2Client.setCredentials(t);
     tokens = t;
     fs.writeFileSync(TOKEN_PATH, JSON.stringify(t));
+    console.log('SAVE_TOKENS:' + JSON.stringify(t));
     res.redirect(`${CLIENT_REDIRECT}?auth=success`);
   } catch (err) {
     res.redirect(`${CLIENT_REDIRECT}?auth=error`);
